@@ -1,45 +1,34 @@
-const ANTHROPIC_API_KEY = "PASTE_YOUR_KEY_HERE";
+const GEMINI_API_KEY = "AIzaSyA7uCfbW7EfQgm9BZSnhmXwkgzq42bxsVQ";
 
 export default {
-    async fetch(request, env, ctx) {
+    async fetch(request) {
         const corsHeaders = {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "Content-Type",
         };
 
-        if (request.method === "OPTIONS") {
-            return new Response(null, { headers: corsHeaders });
-        }
-
-        if (request.method !== "POST") {
-            return new Response(JSON.stringify({ error: true, message: "POST required" }), { status: 405, headers: corsHeaders });
-        }
+        if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+        if (request.method !== "POST") return new Response(JSON.stringify({ error: true }), { status: 405, headers: corsHeaders });
 
         try {
             const { prompt } = await request.json();
+            const systemPrompt = "You are a quiz API. Return ONLY valid JSON matching the schema. No markdown fences. No explanations.";
             
-            const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+            
+            const aiRes = await fetch(url, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-api-key": ANTHROPIC_API_KEY,
-                    "anthropic-version": "2023-06-01"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    model: "claude-3-5-haiku-20241022",
-                    max_tokens: 512,
-                    system: "You are a quiz API. Return ONLY valid JSON matching the user's requested schema. Do not output markdown code blocks or explanations.",
-                    messages: [{ role: "user", content: prompt }]
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: [{ parts: [{ text: prompt }] }]
                 })
             });
 
-            if (!aiRes.ok) throw new Error("Anthropic API Error");
-
             const aiData = await aiRes.json();
-            let rawText = aiData.content[0].text.trim();
+            let rawText = aiData.candidates[0].content.parts[0].text;
             
-            // Clean markdown fences if Claude ignored system instructions
             rawText = rawText.replace(/^```json/i, "").replace(/^```/i, "").replace(/```$/i, "").trim();
 
             return new Response(rawText, { headers: { ...corsHeaders, "Content-Type": "application/json" } });
