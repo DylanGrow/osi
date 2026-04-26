@@ -53,11 +53,11 @@ An AI-powered, interactive quiz app for mastering all 7 layers of the OSI Model.
 
 The worker proxies quiz requests to Gemini so your API key is never exposed in the frontend.
 
-1. Create a free account at [workers.cloudflare.com](https://workers.cloudflare.com)
-2. Create a new Worker and paste in `worker.js`
-3. Add your Gemini API key inside `worker.js` as `GEMINI_API_KEY`
-4. Deploy — copy your Worker URL (e.g. `https://your-app.workers.dev`)
-5. Update the fetch URL in `app.js` to match your Worker URL
+Create a free account at workers.cloudflare.com
+Create a new Worker and paste in worker.js
+Go to the Worker's Settings -> Bindings, and add a Workers AI binding with the exact variable name AI
+Deploy — copy your Worker URL (e.g. https://your-app.workers.dev)
+Update the fetch URL in app.js to match your Worker URL
 
 ### 2. Deploy the Frontend
 
