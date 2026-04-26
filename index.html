@@ -1,18 +1,22 @@
-<div id="strike-container" style="color: #FFB81C; font-size: 1.2rem; margin: 10px 0;">
-    Strikes: <span id="strikes"></span>
-</div>
-
-<button id="toggle-sheet" onclick="toggleCheatSheet()">📋 Open Field Guide</button>
-
-<div id="cheat-sheet" class="hidden">
-    <h3>OSI Field Guide</h3>
-    <div id="layer-list">
-        <p><strong>L7: Application</strong> - The User Interface (The Quarterback's Play Call)</p>
-        <p><strong>L6: Presentation</strong> - Data Format (The Playbook Translation)</p>
-        <p><strong>L5: Session</strong> - Connection Sync (The Huddle)</p>
-        <p><strong>L4: Transport</strong> - Flow Control (The Hand-off)</p>
-        <p><strong>L3: Network</strong> - IP Routing (The Route Run)</p>
-        <p><strong>L2: Data Link</strong> - MAC Addressing (The Player’s Jersey Number)</p>
-        <p><strong>L1: Physical</strong> - Cables & Bits (The Turf)</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSI Model Quiz</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <h1>OSI Model Quiz</h1>
+        <h2 id="layer-display">Layer: 1</h2>
+        <div id="question-container">
+            <p id="question">Loading question...</p>
+            <div id="options">
+                </div>
+        </div>
+        <p id="feedback"></p>
     </div>
-</div>
+    <script src="app.js"></script>
+</body>
+</html>
