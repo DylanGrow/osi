@@ -1,67 +1,60 @@
-// --- 1. Variables & Local Storage ---
-let currentLayer = parseInt(localStorage.getItem('osiLevel')) || 1;
-let strikes = 0;
-const MAX_STRIKES = 3;
+let currentLayer = 1;
+let seenQuestions = [];
 
-// --- 2. Startup Functions ---
-// Make sure to call initGame() somewhere at the bottom of your file to start things off!
-function initGame() {
-    updateStrikeDisplay();
-    // Assuming you have a function called loadQuestion() or fetchQuestion() 
-    // that calls the Worker. Call it here!
-    loadQuestion(); 
-}
+async function loadQuestion() {
+    document.getElementById('question').innerText = "Generating next question...";
+    document.getElementById('options').innerHTML = "";
+    document.getElementById('feedback').innerText = "";
+    document.getElementById('layer-display').innerText = `Layer: ${currentLayer}`;
 
-function updateStrikeDisplay() {
-    // Displays a red 'X' for each strike, or 'Clear' if 0
-    document.getElementById('strikes').innerText = "❌".repeat(strikes) || "Clear";
-}
+    try {
+        const response = await fetch("https://dark-hall-6deb.dylangrow.workers.dev", {
+            method: "POST",
+            body: JSON.stringify({
+                prompt: `Generate a question for OSI Layer ${currentLayer}`,
+                layer: currentLayer,
+                history: seenQuestions
+            })
+        });
 
-// --- 3. The Cheat Sheet Toggle ---
-function toggleCheatSheet() {
-    const sheet = document.getElementById('cheat-sheet');
-    sheet.classList.toggle('hidden');
-}
+        const data = await response.json();
+        seenQuestions.push(data.question);
 
-// --- 4. The Answer Checking & Game Over Logic ---
-function handleAnswer(isCorrect) {
-    if (isCorrect) {
-        // Correct Answer Logic
-        currentLayer++;
-        localStorage.setItem('osiLevel', currentLayer); // Save progress
+        document.getElementById('question').innerText = data.question;
         
-        if (currentLayer > 7) {
-            alert("Super Bowl Champions! You've mastered the OSI Model.");
-            resetGame();
-        } else {
-            loadQuestion(); // Load the next layer
+        const optionsDiv = document.getElementById('options');
+        for (const [key, value] of Object.entries(data.options)) {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = `${key}: ${value}`;
+            btn.onclick = () => checkAnswer(key, data.answer, data.explanation);
+            optionsDiv.appendChild(btn);
         }
-    } else {
-        // Wrong Answer Logic
-        strikes++;
-        updateStrikeDisplay();
-        
-        if (strikes >= MAX_STRIKES) {
-            showGameOver();
-        } else {
-            alert("Penalty! That's a strike. Try the next one.");
-            loadQuestion(); // Load a new question for the same layer
-        }
+    } catch (error) {
+        document.getElementById('question').innerText = "Error loading question. Check console.";
+        console.error(error);
     }
 }
 
-function showGameOver() {
-    // Injects the Game Over screen directly into the page
-    document.body.innerHTML += `
-        <div id="game-over">
-            <h1 style="color: #FFB81C; font-size: 4rem; margin-bottom: 10px;">BENCHED!</h1>
-            <p style="font-size: 1.5rem; margin-bottom: 20px;">You took too many penalties.</p>
-            <button onclick="resetGame()" style="padding: 15px 30px; background: #FFB81C; color: #101820; border: none; font-weight: bold; font-size: 1.2rem; cursor: pointer; border-radius: 5px;">START OVER</button>
-        </div>
-    `;
+function checkAnswer(selected, correct, explanation) {
+    const feedback = document.getElementById('feedback');
+    if (selected === correct) {
+        feedback.style.color = "green";
+        feedback.innerText = "Correct! Moving up...";
+        setTimeout(() => {
+            currentLayer++;
+            if (currentLayer > 7) {
+                alert("You mastered all 7 layers! Resetting to Layer 1.");
+                currentLayer = 1;
+                seenQuestions = [];
+            }
+            loadQuestion();
+        }, 1500);
+    } else {
+        feedback.style.color = "red";
+        feedback.innerText = `Incorrect. The answer was ${correct}. ${explanation}`;
+    }
 }
 
-function resetGame() {
-    localStorage.clear(); // Wipes the saved level
-    location.reload();    // Refreshes the page to start fresh
-}
+// Start the game
+loadQuestion();
