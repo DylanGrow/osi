@@ -1,21 +1,21 @@
-MIT License
+# OSI Model Master PWA
 
-Copyright (c) 2026 Skylar Grow
+A mobile-first, offline-capable educational quiz game using Cloudflare Workers and Anthropic Claude.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+## Deployment Guide
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Fork/clone this repo.
+2. Run `generate-icons.html` locally, download both PNGs into `icons/`.
+3. Create a free Cloudflare account at cloudflare.com.
+4. Deploy `worker.js` as a new Worker (exact steps: Workers & Pages -> Create -> paste code -> deploy).
+5. Get an Anthropic API key at console.anthropic.com.
+6. Paste API key into the Worker's `ANTHROPIC_API_KEY` constant and redeploy.
+7. Copy the Worker's deployed URL, paste it into `app.js` `WORKER_URL` constant.
+8. Enable GitHub Pages: repo Settings -> Pages -> Source: main branch -> root folder -> Save.
+9. Push all files to main. Site is live at `https://yourusername.github.io/your-repo-name/`.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+## Troubleshooting
+
+1. **PWA not installing:** Ensure `icon-192.png` and `icon-512.png` are in the `icons/` folder.
+2. **CORS errors:** Ensure Worker is fully deployed with updated code handling OPTIONS requests.
+3. **AI not loading:** Verify `WORKER_URL` in `app.js` and `ANTHROPIC_API_KEY` in the Worker. If AI fails, the app falls back to the local database silently.
