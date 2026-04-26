@@ -22,7 +22,6 @@ async function loadQuestion() {
   optionsEl.innerHTML    = '';
   feedbackEl.textContent = '';
   feedbackEl.className   = '';
-  optionsEl.classList.remove('answered');
   layerEl.textContent    = `Layer: ${currentLayer}`;
   updateProgress();
 
@@ -48,11 +47,8 @@ async function loadQuestion() {
       const btn = document.createElement('button');
       btn.className   = 'option-btn';
       btn.textContent = `${key}: ${value}`;
-
-      // Accessibility: meaningful label
       btn.setAttribute('aria-label', `Option ${key}: ${value}`);
       btn.type = 'button';
-
       btn.addEventListener('click', () => checkAnswer(key, data.answer, data.explanation));
       optionsEl.appendChild(btn);
     }
@@ -68,39 +64,38 @@ function checkAnswer(selected, correct, explanation) {
   const optionsEl  = document.getElementById('options');
   const buttons    = optionsEl.querySelectorAll('.option-btn');
 
-  // Prevent further clicks
-  optionsEl.classList.add('answered');
-
-  // Highlight correct / wrong buttons
-  buttons.forEach(btn => {
-    const key = btn.textContent.trim().charAt(0);
-    if (key === correct)  btn.classList.add('correct');
-    if (key === selected && selected !== correct) btn.classList.add('wrong');
-  });
-
   if (selected === correct) {
+    // Lock buttons only on correct — next question is loading anyway
+    buttons.forEach(btn => {
+      btn.disabled = true;
+      const key = btn.textContent.trim().charAt(0);
+      if (key === correct) btn.classList.add('correct');
+    });
+
     feedbackEl.className   = 'correct';
     feedbackEl.textContent = '✓ Correct! Moving up…';
 
     setTimeout(() => {
       currentLayer++;
       if (currentLayer > 7) {
-        // Completion — reset
-        feedbackEl.textContent = '';
         alert('🎉 You mastered all 7 layers! Resetting to Layer 1.');
-        currentLayer   = 1;
-        seenQuestions  = [];
+        currentLayer  = 1;
+        seenQuestions = [];
       }
       loadQuestion();
     }, 1500);
 
   } else {
+    // Wrong — highlight wrong button, show correct, but keep others clickable
+    buttons.forEach(btn => {
+      const key = btn.textContent.trim().charAt(0);
+      if (key === selected) btn.classList.add('wrong');
+      if (key === correct)  btn.classList.add('correct');
+    });
+
     feedbackEl.className   = 'wrong';
     feedbackEl.textContent = `✗ Incorrect. Answer was ${correct}. ${explanation}`;
   }
-
-  // Update progress bar aria after answer
-  updateProgress();
 }
 
 // ── Boot ──────────────────────────────────────────────────
