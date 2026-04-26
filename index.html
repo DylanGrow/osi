@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Offline-capable OSI Model educational quiz game">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>OSI Model Master</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="offline-banner" class="hidden" aria-live="polite">Offline Mode: Using local question bank</div>
+    <header>
+        <div class="stats">
+            <span aria-label="Level">Lvl: <span id="level-display">1</span></span>
+            <span aria-label="Score">Score: <span id="score-display">0</span></span>
+            <span aria-label="Streak">Streak: <span id="streak-display">0</span>🔥</span>
+        </div>
+        <button id="theme-toggle" aria-label="Toggle theme">🌓</button>
+    </header>
+    <main id="main-content">
+        <section id="quiz-container" aria-live="assertive">
+            <div id="loading-spinner" class="hidden">Loading...</div>
+            <div id="question-card">
+                <span id="layer-badge" class="badge"></span>
+                <h2 id="question-text">Initializing game...</h2>
+                <div id="options-grid">
+                    <button class="option-btn" data-option="A"><span class="opt-label">A</span> <span class="opt-text">...</span></button>
+                    <button class="option-btn" data-option="B"><span class="opt-label">B</span> <span class="opt-text">...</span></button>
+                    <button class="option-btn" data-option="C"><span class="opt-label">C</span> <span class="opt-text">...</span></button>
+                    <button class="option-btn" data-option="D"><span class="opt-label">D</span> <span class="opt-text">...</span></button>
+                </div>
+            </div>
+            <div id="feedback-region" class="hidden" aria-live="polite">
+                <h3 id="feedback-title"></h3>
+                <p id="explanation-text"></p>
+                <button id="next-btn">Next Question</button>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
