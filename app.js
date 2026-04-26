@@ -1,17 +1,65 @@
+const OSI_NAMES = {
+    1: "Physical",
+    2: "Data Link",
+    3: "Network",
+    4: "Transport",
+    5: "Session",
+    6: "Presentation",
+    7: "Application"
+};
+
 let currentLayer = 1;
 let seenQuestions = [];
 let missedLayers = new Set();
-const workerUrl = "https://dark-hall-6deb.dylangrow.workers.dev";
+const workerUrl = "https://dark-hall-6deb.dylangrow.workers.dev"; // Your Cloudflare URL
 
+// --- WEB AUDIO API (Synthesized UI Sounds) ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function playSound(type) {
+    // Browsers suspend audio until the first user interaction
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    if (type === 'correct') {
+        // Soft, ascending "success" chime (Sine wave)
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4
+        oscillator.frequency.exponentialRampToValueAtTime(554.37, audioCtx.currentTime + 0.1); // C#5
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime); // Very quiet
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3); // Quick fade
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.3);
+    } else if (type === 'wrong') {
+        // Dull, low "thud" (Triangle wave)
+        oscillator.type = 'triangle';
+        oscillator.frequency.setValueAtTime(150, audioCtx.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.2); // Pitch drops quickly
+        gainNode.gain.setValueAtTime(0.12, audioCtx.currentTime); // Slightly louder than success, but still soft
+        gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.2);
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.2);
+    }
+}
+
+// --- CORE GAME LOGIC ---
 async function loadQuestion() {
     const optionsDiv = document.getElementById('options');
     const questionEl = document.getElementById('question');
     const feedback = document.getElementById('feedback');
     
-    questionEl.innerText = "Connecting to Layer " + currentLayer + "...";
+    feedback.className = '';
+    feedback.innerHTML = '';
+    
+    document.getElementById('layer-display').innerText = `Layer ${currentLayer}: ${OSI_NAMES[currentLayer]}`;
+    questionEl.innerText = "Establishing secure connection...";
     optionsDiv.innerHTML = "";
-    feedback.innerText = "";
-    document.getElementById('layer-display').innerText = `Layer: ${currentLayer}`;
     updateProgressBar();
 
     try {
@@ -31,36 +79,50 @@ async function loadQuestion() {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.innerText = `${key}: ${value}`;
-            btn.onclick = () => checkAnswer(key, data);
+            btn.onclick = (e) => checkAnswer(key, data, e.target);
             optionsDiv.appendChild(btn);
         });
     } catch (err) {
-        questionEl.innerText = "Signal lost. Retrying...";
+        questionEl.innerText = "Signal lost. Retrying connection...";
         setTimeout(loadQuestion, 2000);
     }
 }
 
-function checkAnswer(selected, data) {
+function checkAnswer(selected, data, clickedBtn) {
     const feedback = document.getElementById('feedback');
     const buttons = document.querySelectorAll('.option-btn');
+    
     buttons.forEach(btn => btn.disabled = true);
 
+    let correctBtn = null;
+    buttons.forEach(btn => {
+        if(btn.innerText.startsWith(data.answer)) correctBtn = btn;
+    });
+
     if (selected === data.answer) {
-        feedback.style.color = "#00e5ff";
-        feedback.innerText = "✓ CORRECT: " + data.explanation;
+        playSound('correct'); // Trigger success sound
+        clickedBtn.classList.add('correct-pulse');
+        feedback.className = 'feedback-box success';
+        feedback.innerHTML = `<strong>✓ ACCESS GRANTED:</strong> ${data.explanation}`;
+        
         setTimeout(() => {
             currentLayer++;
             if (currentLayer > 7) showWinState();
             else loadQuestion();
         }, 3000);
     } else {
-        feedback.style.color = "#ff1744";
-        feedback.innerText = `✗ INCORRECT. Answer was ${data.answer}. ${data.explanation}`;
+        playSound('wrong'); // Trigger fail sound
+        clickedBtn.classList.add('error-shake');
+        if (correctBtn) correctBtn.classList.add('correct-highlight');
+        
+        feedback.className = 'feedback-box error';
+        feedback.innerHTML = `<strong>✗ ACCESS DENIED:</strong> Answer was ${data.answer}. ${data.explanation}`;
         missedLayers.add(currentLayer);
+        
         setTimeout(() => {
             buttons.forEach(btn => btn.disabled = false);
             loadQuestion();
-        }, 4000);
+        }, 4500);
     }
 }
 
@@ -90,8 +152,14 @@ function showWinState() {
         html += `<p style="color: #ffb612; font-weight: bold; margin: 20px 0; text-shadow: 0 0 8px rgba(255, 182, 18, 0.5);">Flawless victory! Zero mistakes.</p>`;
     }
 
-    html += `<button class="option-btn" onclick="location.reload()" style="margin-top: 1rem; text-align: center; width: 100%;">REBOOT SYSTEM</button>`;
+    // CSP-Safe Reboot Button
+    html += `<button class="option-btn" id="reboot-btn" style="margin-top: 1rem; text-align: center; width: 100%;">REBOOT SYSTEM</button>`;
     container.innerHTML = html;
+
+    // Attach the event listener SECURELY after the button is added to the page
+    document.getElementById('reboot-btn').addEventListener('click', () => {
+        location.reload();
+    });
 }
 
 // --- BACKGROUND ANIMATION ---
