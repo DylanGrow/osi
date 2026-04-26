@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PNG Icons</title>
+    <style>body{font-family:sans-serif;padding:2rem;} canvas{border:1px solid #ccc;margin:10px;}</style>
+</head>
+<body>
+    <h1>Icon Generator</h1>
+    <p>Click below to generate and download the required PNG icons from the SVG source.</p>
+    <div>
+        <canvas id="c192" width="192" height="192"></canvas>
+        <button onclick="download('c192', 'icon-192.png')">Download icon-192.png</button>
+    </div>
+    <div>
+        <canvas id="c512" width="512" height="512"></canvas>
+        <button onclick="download('c512', 'icon-512.png')">Download icon-512.png</button>
+    </div>
+    <script>
+        const svgData = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="5" width="80" height="11" fill="#ef4444" rx="2" />
+            <rect x="10" y="18" width="80" height="11" fill="#f97316" rx="2" />
+            <rect x="10" y="31" width="80" height="11" fill="#eab308" rx="2" />
+            <rect x="10" y="44" width="80" height="11" fill="#22c55e" rx="2" />
+            <rect x="10" y="57" width="80" height="11" fill="#3b82f6" rx="2" />
+            <rect x="10" y="70" width="80" height="11" fill="#6366f1" rx="2" />
+            <rect x="10" y="83" width="80" height="11" fill="#a855f7" rx="2" />
+            <text x="50" y="14" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">7</text>
+            <text x="50" y="27" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">6</text>
+            <text x="50" y="40" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">5</text>
+            <text x="50" y="53" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">4</text>
+            <text x="50" y="66" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">3</text>
+            <text x="50" y="79" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">2</text>
+            <text x="50" y="92" font-family="sans-serif" font-size="8" font-weight="bold" fill="white" text-anchor="middle">1</text>
+        </svg>`;
+        
+        const blob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        
+        img.onload = () => {
+            const ctx192 = document.getElementById('c192').getContext('2d');
+            ctx192.drawImage(img, 0, 0, 192, 192);
+            const ctx512 = document.getElementById('c512').getContext('2d');
+            ctx512.drawImage(img, 0, 0, 512, 512);
+            URL.revokeObjectURL(url);
+        };
+        img.src = url;
+
+        function download(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
