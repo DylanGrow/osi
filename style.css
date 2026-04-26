@@ -1,38 +1,463 @@
+/* ============================================================
+   OSI MODEL QUIZ — style.css
+   Theme: Glassmorphism + Electric Cyan + Star Field
+   Font: JetBrains Mono (monospace)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────── */
+:root {
+  --cyan:        #00e5ff;
+  --cyan-dim:    rgba(0, 229, 255, 0.18);
+  --cyan-glow:   rgba(0, 229, 255, 0.35);
+  --cyan-dark:   #0097a7;
+  --green:       #00e676;
+  --green-glow:  rgba(0, 230, 118, 0.45);
+  --red:         #ff1744;
+  --red-glow:    rgba(255, 23, 68, 0.45);
+  --glass-bg:    rgba(255, 255, 255, 0.055);
+  --glass-border:rgba(255, 255, 255, 0.13);
+  --glass-shine: rgba(255, 255, 255, 0.06);
+  --text-primary:   #e8f8ff;
+  --text-secondary: #90cad4;
+  --text-muted:     #4a7a85;
+  --bg-deep:     #020b10;
+  --font:        'JetBrains Mono', 'Fira Code', monospace;
+  --radius-card: 20px;
+  --transition:  0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Reset & Base ──────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  min-height: 100vh;
+}
+
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+  font-family: var(--font);
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-x: hidden;
+  position: relative;
 }
+
+/* ── Star Field Canvas ─────────────────────────────────── */
+#star-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Ambient light blobs behind card ──────────────────── */
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, #00e5ff 0%, transparent 70%);
+  top: -140px;
+  left: -140px;
+}
+body::after {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #0077ff 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+}
+
+/* ── Game Container ────────────────────────────────────── */
 #game-container {
-    background: white;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    width: 100%;
-    max-width: 600px;
-    text-align: center;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+
+  /* Glassmorphism card */
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 2.6rem 2.4rem 2.8rem;
+
+  /* Frosted glass border shimmer via box-shadow */
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06) inset,
+    0 8px 48px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(0, 229, 255, 0.06);
+
+  /* Fade-in on load */
+  animation: fadeInCard 0.75s ease both;
 }
+
+/* Inner top shine line */
+#game-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(0, 229, 255, 0.55) 40%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(0, 229, 255, 0.55) 60%,
+    transparent
+  );
+  border-radius: 999px;
+}
+
+@keyframes fadeInCard {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── H1 — Main Title ───────────────────────────────────── */
+h1 {
+  font-size: clamp(1.3rem, 4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--cyan);
+  text-shadow:
+    0 0 12px rgba(0, 229, 255, 0.7),
+    0 0 30px rgba(0, 229, 255, 0.3);
+  margin-bottom: 0.4rem;
+}
+
+/* ── Layer Badge + Progress Row ────────────────────────── */
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin: 1.1rem 0 0.5rem;
+}
+
+/* Layer badge */
+h2#layer-display {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bg-deep);
+  background: var(--cyan);
+  padding: 0.3em 0.85em;
+  border-radius: 4px 14px 14px 4px; /* asymmetric — sharp left, rounded right */
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.55);
+}
+
+/* Progress bar wrapper */
+.progress-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.07);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;   /* JS should update this via inline style */
+  background: linear-gradient(90deg, var(--cyan-dark), var(--cyan));
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8px var(--cyan-glow);
+}
+
+/* ── Question Container ─────────────────────────────────── */
+#question-container {
+  margin-top: 1.4rem;
+}
+
+#question {
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  min-height: 3.5em;
+  letter-spacing: 0.01em;
+}
+
+/* ── Options Grid — 2×2 ────────────────────────────────── */
+#options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+/* ── Option Buttons ────────────────────────────────────── */
 .option-btn {
-    display: block;
-    width: 100%;
-    margin: 10px 0;
-    padding: 12px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
+  font-family: var(--font);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--text-primary);
+  cursor: pointer;
+  border: none;
+  outline: none;
+
+  /* Asymmetric: sharp top-left + bottom-left, rounded top-right + bottom-right */
+  border-radius: 4px 18px 18px 4px;
+
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  /* Frosted glass border */
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-left: 2px solid var(--cyan-dim);
+
+  padding: 0.9rem 1rem;
+  text-align: left;
+  line-height: 1.4;
+
+  position: relative;
+  overflow: hidden;
+  transition:
+    background var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition),
+    transform var(--transition),
+    color var(--transition);
 }
+
+/* Subtle inner shimmer line on buttons */
+.option-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(255,255,255,0.05) 0%,
+    transparent 60%
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Left accent bar */
+.option-btn::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 15%; bottom: 15%;
+  width: 2px;
+  background: var(--cyan);
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity var(--transition), box-shadow var(--transition);
+}
+
+/* Hover state */
 .option-btn:hover {
-    background-color: #0056b3;
+  background: rgba(0, 229, 255, 0.09);
+  border-color: rgba(0, 229, 255, 0.4);
+  border-left-color: var(--cyan);
+  box-shadow:
+    0 0 20px rgba(0, 229, 255, 0.18),
+    0 4px 16px rgba(0,0,0,0.3);
+  transform: translateX(3px);
+  color: #fff;
 }
+.option-btn:hover::after {
+  opacity: 1;
+  box-shadow: 0 0 8px var(--cyan);
+}
+
+/* Active press */
+.option-btn:active {
+  transform: translateX(1px) scale(0.98);
+}
+
+/* ── Correct / Wrong Flash States ──────────────────────── */
+.option-btn.correct {
+  background: rgba(0, 230, 118, 0.18) !important;
+  border-color: var(--green) !important;
+  border-left-color: var(--green) !important;
+  color: #b9ffdb !important;
+  box-shadow:
+    0 0 24px var(--green-glow),
+    0 0 8px var(--green-glow) inset !important;
+  animation: correctFlash 0.5s ease;
+}
+
+.option-btn.wrong {
+  background: rgba(255, 23, 68, 0.16) !important;
+  border-color: var(--red) !important;
+  border-left-color: var(--red) !important;
+  color: #ffb3bf !important;
+  box-shadow:
+    0 0 24px var(--red-glow),
+    0 0 8px var(--red-glow) inset !important;
+  animation: wrongFlash 0.5s ease;
+}
+
+@keyframes correctFlash {
+  0%   { filter: brightness(1); }
+  40%  { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
+}
+
+@keyframes wrongFlash {
+  0%   { filter: brightness(1); }
+  40%  { filter: brightness(1.5); }
+  100% { filter: brightness(1); }
+}
+
+/* Disable pointer events on all buttons while an answer is selected */
+#options.answered .option-btn {
+  pointer-events: none;
+}
+
+/* ── Feedback Text ──────────────────────────────────────── */
 #feedback {
-    margin-top: 20px;
-    font-weight: bold;
+  margin-top: 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  min-height: 1.4em;
+  transition: color var(--transition), opacity var(--transition);
+  opacity: 0;
 }
+
+#feedback.correct {
+  color: var(--green);
+  text-shadow: 0 0 12px var(--green-glow);
+  opacity: 1;
+}
+
+#feedback.wrong {
+  color: var(--red);
+  text-shadow: 0 0 12px var(--red-glow);
+  opacity: 1;
+}
+
+#feedback:not(:empty) {
+  opacity: 1;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--cyan-dim);
+  border-radius: 999px;
+}
+
+/* ── Responsive ─────────────────────────────────────────── */
+@media (max-width: 520px) {
+  #game-container {
+    padding: 2rem 1.4rem 2.2rem;
+    border-radius: 16px;
+  }
+
+  #options {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+  }
+
+  .option-btn {
+    font-size: 0.75rem;
+    padding: 0.8rem 0.75rem;
+  }
+
+  h1 {
+    font-size: 1.15rem;
+  }
+
+  .progress-row {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 360px) {
+  #options {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ============================================================
+   STAR FIELD — add this <canvas> + <script> snippet to your
+   index.html just before </body> for the animated background.
+   The CSS above references #star-canvas.
+   ============================================================
+
+   Paste inside index.html:
+
+   <canvas id="star-canvas"></canvas>
+   <script>
+   (function() {
+     const canvas = document.getElementById('star-canvas');
+     const ctx = canvas.getContext('2d');
+     let stars = [];
+     const N = 160;
+
+     function resize() {
+       canvas.width  = window.innerWidth;
+       canvas.height = window.innerHeight;
+     }
+
+     function initStars() {
+       stars = Array.from({ length: N }, () => ({
+         x: Math.random() * canvas.width,
+         y: Math.random() * canvas.height,
+         r: Math.random() * 1.2 + 0.2,
+         alpha: Math.random() * 0.6 + 0.15,
+         speed: Math.random() * 0.25 + 0.05,
+         twinkleSpeed: Math.random() * 0.008 + 0.003,
+         twinkleDir: Math.random() > 0.5 ? 1 : -1,
+       }));
+     }
+
+     function draw() {
+       ctx.clearRect(0, 0, canvas.width, canvas.height);
+       for (const s of stars) {
+         s.alpha += s.twinkleSpeed * s.twinkleDir;
+         if (s.alpha > 0.85 || s.alpha < 0.08) s.twinkleDir *= -1;
+         s.y -= s.speed;
+         if (s.y < -2) { s.y = canvas.height + 2; s.x = Math.random() * canvas.width; }
+
+         ctx.beginPath();
+         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+         ctx.fillStyle = `rgba(${Math.random() > 0.85 ? '0,229,255' : '200,235,255'},${s.alpha})`;
+         ctx.fill();
+       }
+       requestAnimationFrame(draw);
+     }
+
+     resize();
+     initStars();
+     draw();
+     window.addEventListener('resize', () => { resize(); initStars(); });
+   })();
+   </script>
+
+   ============================================================ */
