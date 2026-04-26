@@ -1,4 +1,4 @@
-const WORKER_URL = "PASTE_YOUR_WORKER_URL_HERE";
+const WORKER_URL = "https://dark-hall-6deb.dylangrow.workers.dev";
 
 const LOCAL_BANK = [
     { layer: 1, question: "Which device operates primarily at the Physical layer?", options: { A: "Router", B: "Switch", C: "Hub", D: "Firewall" }, answer: "C", explanation: "Hubs are Layer 1 devices that simply broadcast electrical signals to all ports without inspecting MAC or IP addresses." },
