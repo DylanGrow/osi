@@ -58,3 +58,4 @@ function checkAnswer(selected, correct, explanation) {
 
 // Start the game
 loadQuestion();
+document.getElementById('progress-bar').style.width = (currentLayer / 7 * 100) + '%';
