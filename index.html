@@ -2,81 +2,120 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OSI Model Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Test your knowledge of the OSI Model with this interactive AI-powered quiz. Master all 7 layers from Physical to Application.">
+  <meta name="theme-color" content="#020b10">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="OSI Model Quiz">
+  <meta property="og:description" content="Master all 7 layers of the OSI Model with this AI-powered interactive quiz.">
+  <meta property="og:image" content="icons/icon-512.png">
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/icon-16.png">
+
+  <!-- No third-party font requests — 100% system fonts, adblock proof -->
+  <!-- CSP: only connects to your own Worker, nothing else -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://dark-hall-6deb.dylangrow.workers.dev; img-src 'self' data:; font-src 'self';">
+
   <link rel="stylesheet" href="style.css">
+  <title>OSI Model Quiz — Master All 7 Layers</title>
 </head>
 <body>
 
-  <canvas id="star-canvas"></canvas>
+  <!-- Decorative canvas, hidden from assistive tech -->
+  <canvas id="star-canvas" aria-hidden="true" focusable="false"></canvas>
 
-  <div id="game-container">
-    <h1>OSI Model Quiz</h1>
+  <main id="game-container">
 
-    <!-- Progress row: layer badge + progress bar -->
+    <header class="quiz-header">
+      <h1>OSI Model Quiz</h1>
+      <p class="subtitle">Master the 7 Layers</p>
+    </header>
+
     <div class="progress-row">
-      <h2 id="layer-display">Layer: 1</h2>
-      <div class="progress-bar-wrap">
+      <h2 id="layer-display" aria-live="polite" aria-atomic="true">Layer: 1</h2>
+      <div
+        class="progress-bar-wrap"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="7"
+        aria-valuenow="1"
+        aria-label="Layer progress"
+        id="progress-bar-wrap"
+      >
         <div class="progress-bar-fill" id="progress-bar"></div>
       </div>
     </div>
 
-    <div id="question-container">
-      <p id="question">Loading question...</p>
-      <div id="options"></div>
-    </div>
+    <section id="question-container" aria-label="Current question">
+      <p id="question" aria-live="polite" aria-atomic="true">Loading question...</p>
+      <div id="options" role="group" aria-label="Answer options"></div>
+    </section>
 
-    <p id="feedback"></p>
-  </div>
+    <p id="feedback" role="alert" aria-live="assertive" aria-atomic="true"></p>
 
-  <script src="app.js"></script>
+  </main>
 
-  <!-- Star field animation -->
+  <script src="app.js" defer></script>
+
   <script>
-  (function() {
-    const canvas = document.getElementById('star-canvas');
-    const ctx = canvas.getContext('2d');
-    let stars = [];
-    const N = 160;
+    (function () {
+      const canvas = document.getElementById('star-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let stars = [];
+      const N = 140;
 
-    function resize() {
-      canvas.width  = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-
-    function initStars() {
-      stars = Array.from({ length: N }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.2 + 0.2,
-        alpha: Math.random() * 0.6 + 0.15,
-        speed: Math.random() * 0.25 + 0.05,
-        twinkleSpeed: Math.random() * 0.008 + 0.003,
-        twinkleDir: Math.random() > 0.5 ? 1 : -1,
-      }));
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (const s of stars) {
-        s.alpha += s.twinkleSpeed * s.twinkleDir;
-        if (s.alpha > 0.85 || s.alpha < 0.08) s.twinkleDir *= -1;
-        s.y -= s.speed;
-        if (s.y < -2) { s.y = canvas.height + 2; s.x = Math.random() * canvas.width; }
-
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${Math.random() > 0.85 ? '0,229,255' : '200,235,255'},${s.alpha})`;
-        ctx.fill();
+      function resize() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight;
       }
-      requestAnimationFrame(draw);
-    }
 
-    resize();
-    initStars();
-    draw();
-    window.addEventListener('resize', () => { resize(); initStars(); });
-  })();
+      function initStars() {
+        stars = Array.from({ length: N }, () => ({
+          x:            Math.random() * canvas.width,
+          y:            Math.random() * canvas.height,
+          r:            Math.random() * 1.2 + 0.2,
+          alpha:        Math.random() * 0.6 + 0.15,
+          speed:        Math.random() * 0.2 + 0.04,
+          twinkleSpeed: Math.random() * 0.007 + 0.002,
+          twinkleDir:   Math.random() > 0.5 ? 1 : -1,
+          isCyan:       Math.random() > 0.85,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const s of stars) {
+          s.alpha += s.twinkleSpeed * s.twinkleDir;
+          if (s.alpha > 0.85 || s.alpha < 0.08) s.twinkleDir *= -1;
+          s.y -= s.speed;
+          if (s.y < -2) {
+            s.y = canvas.height + 2;
+            s.x = Math.random() * canvas.width;
+          }
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = s.isCyan
+            ? `rgba(0,229,255,${s.alpha})`
+            : `rgba(200,235,255,${s.alpha})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+
+      resize();
+      initStars();
+      draw();
+      window.addEventListener('resize', () => { resize(); initStars(); });
+    })();
   </script>
 
 </body>
