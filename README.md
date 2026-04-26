@@ -20,7 +20,7 @@ An AI-powered, interactive quiz app for mastering all 7 layers of the OSI Model.
 | Layer | Technology |
 |---|---|
 | Frontend | Vanilla HTML, CSS, JavaScript |
-| AI Backend | Google Gemini 1.5 Flash |
+| AI Backend | AI Backend | Meta Llama 3.1 8B Instruct |
 | API Proxy | Cloudflare Workers |
 | Hosting | Static (any host) |
 | Fonts | System monospace (zero external requests) |
@@ -74,9 +74,8 @@ Make sure your `icons/` folder contains all four sizes referenced in `manifest.j
 
 ---
 
-## Gemini API Key
-
-Get a free key at [aistudio.google.com](https://aistudio.google.com). The key lives only in your Cloudflare Worker — it is never shipped to the browser.
+## Zero API Keys Required
+Because this project uses Cloudflare Workers AI, the Meta Llama 3.1 model is baked directly into the Cloudflare environment. You do not need to manage, secure, or pay for external OpenAI, Anthropic, or Google API keys. The Cloudflare free tier handles the AI requests natively.
 
 ---
 
