@@ -83,6 +83,7 @@ body {
   border-radius: 13px;
 }
 
+/* ANIMATION FIX: Packet Transition */
 .packet {
   position: absolute;
   left: 50%;
@@ -94,6 +95,7 @@ body {
   pointer-events: none;
   opacity: 0;
   box-shadow: 0 0 15px currentColor;
+  transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s, background 0.3s;
 }
 
 #osi-stack {
@@ -116,24 +118,37 @@ body {
   animation: slideIn 0.4s ease both;
 }
 
-/* Active Class for Quiz Logic */
-.active-layer {
+.layer:hover {
+  transform: translateX(6px);
+  filter: brightness(1.1);
+}
+
+/* SYNC FIX: Active state for both Quiz and Explorer */
+.layer.active {
   transform: translateX(8px) scale(1.02);
-  filter: brightness(1.13);
-  border-color: rgba(255,255,255,0.5) !important;
+  filter: brightness(1.15);
+  border-color: rgba(255,255,255,0.4) !important;
   animation: pulse 2s infinite !important;
   z-index: 10;
 }
 
 .layer-num { font-size: 20px; font-weight: 700; min-width: 30px; opacity: 0.9; }
 .layer-name { font-size: 14px; font-weight: 600; flex: 1; padding-left: 10px; }
-.layer-proto { font-size: 10px; opacity: 0.7; white-space: nowrap; overflow: hidden; }
+
+/* ANIMATION FIX: Typewriter base state */
+.layer-proto { 
+  font-size: 10px; 
+  opacity: 0.7; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  width: 0; 
+}
 
 /* Detail Panel */
 .detail-panel {
   margin-top: 15px;
   border-radius: 10px;
-  padding: 15px;
+  padding: 18px;
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.03);
   display: none;
@@ -182,6 +197,7 @@ body {
 .option:hover {
   background: rgba(255,255,255,0.08);
   border-color: rgba(255,255,255,0.3);
+  transform: translateY(-1px);
 }
 
 /* Feedback & Explanations */
@@ -195,14 +211,15 @@ body {
   display: block;
   font-weight: 400;
   font-size: 13px;
-  margin-top: 6px;
+  margin-top: 8px;
   color: #aaa;
+  line-height: 1.4;
 }
 
 .correct { color: var(--correct); }
 .wrong { color: var(--wrong); }
 
-/* Animations */
+/* ANIMATION KEYFRAMES */
 @keyframes slideIn {
   from { opacity: 0; transform: translateX(-30px); }
   to { opacity: 1; transform: translateX(0); }
@@ -210,7 +227,7 @@ body {
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 var(--glow); }
-  50% { box-shadow: 0 0 0 8px transparent; }
+  50% { box-shadow: 0 0 0 10px transparent; }
 }
 
 @keyframes fadeUp {
@@ -223,13 +240,14 @@ body {
   to { width: 100%; }
 }
 
-.tw.run { animation: typewriter 0.7s steps(30) both; }
+.tw.run { animation: typewriter 0.8s steps(35) forwards; }
 
 #total {
   margin-top: 30px;
   font-size: 11px;
   color: var(--text-muted);
   text-align: right;
+  opacity: 0.6;
 }
 
 #loading {
@@ -238,12 +256,13 @@ body {
   right: 20px;
   font-size: 12px;
   color: var(--accent);
+  letter-spacing: 0.05em;
 }
 
-/* Legend */
 .legend {
   margin-top: 15px;
   font-size: 11px;
   color: var(--text-muted);
   text-align: center;
+  font-style: italic;
 }
