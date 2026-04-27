@@ -16,7 +16,7 @@ const state = {
 // CONFIG
 // ============================================================
 
-const API_URL = "https://dark-hall-6deb.dylangrow.workers.dev"; // URL updated to live endpoint
+const API_URL = "https://dark-hall-6deb.dylangrow.workers.dev";
 const QUESTION_TIME = 90; // seconds
 const AUTO_ADVANCE_DELAY = 1800; // ms after answer
 
@@ -83,7 +83,8 @@ function renderQuestion(data) {
     optionsEl.appendChild(btn);
   });
 
-  document.querySelector("#result").textContent = "";
+  // FIXED: Changed #result to #feedback
+  document.querySelector("#feedback").textContent = "";
   updateHUD();
 }
 
@@ -125,7 +126,8 @@ function selectAnswer(choice) {
 // ============================================================
 
 function showResult(choice, correct) {
-  const resultEl = document.querySelector("#result");
+  // FIXED: Changed #result to #feedback
+  const resultEl = document.querySelector("#feedback");
 
   if (choice === correct) {
     resultEl.textContent = "Correct ✅";
