@@ -1,5 +1,5 @@
 const explorerData = {
-  7: { color:'#7b2ff7', name:'Application layer', desc:'Closest to the user. Defines how apps request data.', protocols:['HTTP','HTTPS','DNS','FTP'], pdu:'Data', example:'Browser sends HTTP GET request.' },
+  7: { color:'#7b2ff7', name:'Application layer', desc:'Closest to user. Defines how apps request data.', protocols:['HTTP','HTTPS','DNS','FTP'], pdu:'Data', example:'Browser sends HTTP GET request.' },
   6: { color:'#d63af9', name:'Presentation layer', desc:'The translator. Handles encryption and formatting.', protocols:['TLS','SSL','JPEG','ASCII'], pdu:'Data', example:'TLS encrypts data; JPEG compresses images.' },
   5: { color:'#f74e8e', name:'Session layer', desc:'Manages connections. Handles checkpoints and sync.', protocols:['RPC','SIP','NetBIOS'], pdu:'Data', example:'Keeping a video call in sync after drops.' },
   4: { color:'#f9771e', name:'Transport layer', desc:'End-to-end delivery. TCP for reliability, UDP for speed.', protocols:['TCP','UDP','QUIC'], pdu:'Segment', example:'Webpages (TCP) vs Live Video (UDP).' },
@@ -16,6 +16,7 @@ const state = {
 };
 
 const API_URL = "https://dark-hall-6deb.dylangrow.workers.dev";
+const AUTO_ADVANCE_DELAY = 2800;
 
 window.addEventListener("DOMContentLoaded", () => {
   bindKeys();
@@ -23,8 +24,8 @@ window.addEventListener("DOMContentLoaded", () => {
   nextQuestion();
 });
 
-// --- INTERACTIVE EXPLORER (The Fix) ---
-function toggle(n) {
+// FIXED: Renamed to match your HTML's onclick="toggleLayerDetail(n)"
+function toggleLayerDetail(n) {
   const panel = document.getElementById('detail-panel');
   const layers = document.querySelectorAll('.layer');
 
@@ -35,35 +36,21 @@ function toggle(n) {
     return;
   }
 
-  // UI Updates
   layers.forEach(l => l.classList.remove('active'));
   document.getElementById('l'+n).classList.add('active');
   state.activeDetail = n;
 
   const d = explorerData[n];
-  const tags = d.protocols.map(p => `<span class="tag" style="background:${d.color}22; color:${d.color}; border:1px solid ${d.color}44; padding:2px 8px; border-radius:20px; font-size:11px; margin:2px; display:inline-block;">${p}</span>`).join('');
-
-  panel.style.background = d.color + '10';
+  panel.style.background = d.color + '15';
   panel.style.borderColor = d.color + '44';
   panel.innerHTML = `
-    <div style="color:${d.color}; font-weight:700; font-size:16px; margin-bottom:5px;">${d.name}</div>
-    <div style="font-size:13px; line-height:1.6; margin-bottom:10px; opacity:0.9;">${d.desc}</div>
-    <div style="margin-bottom:10px;">${tags}</div>
-    <div style="font-size:12px; opacity:0.8;"><span style="color:${d.color}; font-weight:700;">PDU:</span> ${d.pdu}</div>
-    <div style="font-size:12px; opacity:0.8; margin-top:4px;"><span style="color:${d.color}; font-weight:700;">Logic:</span> ${d.example}</div>
+    <div style="color:${d.color}; font-weight:700; font-size:16px;">${d.name}</div>
+    <div style="font-size:13px; margin-top:5px; opacity:0.9;">${d.desc}</div>
+    <div style="font-size:11px; margin-top:10px;"><b style="color:${d.color}">PDU:</b> ${d.pdu}</div>
   `;
   panel.classList.add('visible');
-
-  // Trigger Typewriter Animation on the proto-text
-  const protoText = document.getElementById('p' + n);
-  if (protoText) {
-    protoText.classList.remove('run');
-    void protoText.offsetWidth; // Force reflow
-    protoText.classList.add('run');
-  }
 }
 
-// --- QUIZ ENGINE ---
 async function nextQuestion() {
   resetStateForQuestion();
   let layerToFetch;
@@ -97,7 +84,6 @@ function renderQuestion(data) {
   document.querySelector("#layer-display").textContent = state.isBonusRound ? `REMEDIATION: Layer ${layerNum}` : `PROTOCOL: Layer ${layerNum}`;
   document.querySelector("#progress-bar").style.width = `${(state.total / 7) * 100}%`;
 
-  // Highlight active quiz layer
   document.querySelectorAll(".layer").forEach(el => {
     el.classList.remove('active');
     if (el.id === `l${layerNum}`) el.classList.add('active');
@@ -144,6 +130,7 @@ function animatePacket() {
   let i = 0;
   setInterval(() => {
     const el = layers[i];
+    if (!el) return;
     const topPos = el.offsetTop + (el.offsetHeight / 2) - 10;
     pkt.style.opacity = '1';
     pkt.style.top = topPos + 'px';
@@ -152,7 +139,6 @@ function animatePacket() {
   }, 1200);
 }
 
-// --- SHARED ---
 function startTimer() {
   state.timeLeft = 90;
   state.timer = setInterval(() => {
