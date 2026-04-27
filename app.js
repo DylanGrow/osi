@@ -1,164 +1,236 @@
-// ==========================================
-// OSI Model Quiz - Frontend with Prefetching
-// ==========================================
+// ============================================================
+// EXAM ENGINE STATE
+// ============================================================
 
-const WORKER_URL = "https://dark-hall-6deb.dylangrow.workers.dev";
-let currentLayer = 1;
-let currentQuestion = null;
-let nextQuestionBuffer = null; 
-let isPrefetching = false;
-
-// DOM Elements
-const elements = {
-  layerDisplay: document.getElementById('layer-display'),
-  progressBar: document.getElementById('progress-bar'),
-  questionText: document.getElementById('question'),
-  optionsContainer: document.getElementById('options'),
-  feedbackContainer: document.getElementById('feedback')
+const state = {
+  question: null,
+  score: 0,
+  streak: 0,
+  total: 0,
+  locked: false,
+  timer: null,
+  timeLeft: 90
 };
 
-// ==========================================
-// 1. API Calls
-// ==========================================
+// ============================================================
+// CONFIG
+// ============================================================
 
-// Base fetch function
-async function fetchFromWorker(layer) {
+const API_URL = "https://your-worker-url"; // <-- update this
+const QUESTION_TIME = 90; // seconds
+const AUTO_ADVANCE_DELAY = 1800; // ms after answer
+
+// ============================================================
+// BOOT
+// ============================================================
+
+window.addEventListener("DOMContentLoaded", init);
+
+async function init() {
+  bindKeys();
+  await nextQuestion();
+}
+
+// ============================================================
+// CORE LOOP
+// ============================================================
+
+async function nextQuestion() {
+  resetStateForQuestion();
+
+  const layer = pickLayer();
+
+  showLoading(true);
+
   try {
-    const response = await fetch(WORKER_URL, {
+    const res = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ layer: layer })
+      body: JSON.stringify({ layer })
     });
-    
-    if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    console.error("Worker fetch failed:", error);
-    return null;
+
+    const data = await res.json();
+
+    state.question = data;
+    state.total++;
+
+    renderQuestion(data);
+    startTimer();
+
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    renderError();
   }
+
+  showLoading(false);
 }
 
-// Background prefetch logic
-async function prefetchNextLayer() {
-  const nextLayer = currentLayer + 1;
-  
-  // Don't prefetch if we are already fetching, if the buffer is full, or if we passed Layer 7
-  if (isPrefetching || nextQuestionBuffer || nextLayer > 7) return;
+// ============================================================
+// RENDERING
+// ============================================================
 
-  console.log(`[Prefetch] Silently loading Layer ${nextLayer} in background...`);
-  isPrefetching = true;
-  
-  const data = await fetchFromWorker(nextLayer);
-  if (data) {
-    nextQuestionBuffer = data;
-    console.log(`[Prefetch] Layer ${nextLayer} is loaded and waiting in buffer.`);
-  }
-  
-  isPrefetching = false;
-}
-
-// ==========================================
-// 2. Core Game Logic
-// ==========================================
-
-async function loadQuestion(layer) {
-  updateProgressUI(layer);
-  elements.feedbackContainer.innerHTML = ''; // Clear feedback
-  elements.optionsContainer.innerHTML = ''; // Clear options
-  
-  // SCENARIO A: The buffer is ready! Instant load.
-  if (nextQuestionBuffer && nextQuestionBuffer.meta.layer === layer) {
-    console.log(`[Buffer Hit] Instantly loading Layer ${layer} from memory.`);
-    currentQuestion = nextQuestionBuffer;
-    nextQuestionBuffer = null; // Empty the buffer
-    renderQuestion(currentQuestion);
-    
-    // Immediately start fetching the next one
-    prefetchNextLayer(); 
-    return;
-  }
-
-  // SCENARIO B: Buffer empty or missed (User clicked too fast or cold start)
-  console.log(`[Buffer Miss] Fetching Layer ${layer} live...`);
-  elements.questionText.innerHTML = '<span class="loading">Establishing connection to AI...</span>';
-  
-  const data = await fetchFromWorker(layer);
-  if (data) {
-    currentQuestion = data;
-    renderQuestion(currentQuestion);
-    prefetchNextLayer(); // Start fetching the next one
-  } else {
-    elements.questionText.textContent = "Failed to connect to the exam engine. Please try again.";
-  }
-}
-
-// Render the question and buttons to the DOM
 function renderQuestion(data) {
-  elements.questionText.textContent = data.question;
-  
-  // Create a button for each option (A, B, C, D)
-  Object.entries(data.options).forEach(([letter, text]) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.innerHTML = `<strong>${letter}:</strong> ${text}`;
-    
-    btn.addEventListener('click', () => handleAnswer(letter, data.answer, data.explanation, btn));
-    elements.optionsContainer.appendChild(btn);
+  document.querySelector("#question").textContent = data.question;
+
+  const optionsEl = document.querySelector("#options");
+  optionsEl.innerHTML = "";
+
+  Object.entries(data.options).forEach(([key, value]) => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.textContent = `${key}: ${value}`;
+    btn.onclick = () => selectAnswer(key);
+    optionsEl.appendChild(btn);
   });
+
+  document.querySelector("#result").textContent = "";
+  updateHUD();
 }
 
-// Handle the user's choice
-function handleAnswer(selectedLetter, correctLetter, explanation, clickedButton) {
-  // Disable all buttons to prevent double-clicking
-  const allButtons = document.querySelectorAll('.option-btn');
-  allButtons.forEach(btn => {
-    btn.disabled = true;
-    if (btn.innerHTML.includes(`<strong>${correctLetter}:</strong>`)) {
-      btn.classList.add('correct');
+function renderError() {
+  document.querySelector("#question").textContent =
+    "Error loading question. Retrying...";
+
+  setTimeout(nextQuestion, 2000);
+}
+
+// ============================================================
+// ANSWER HANDLER
+// ============================================================
+
+function selectAnswer(choice) {
+  if (state.locked) return;
+  state.locked = true;
+
+  stopTimer();
+
+  const correct = state.question.answer;
+  const isCorrect = choice === correct;
+
+  if (isCorrect) {
+    state.score++;
+    state.streak++;
+  } else {
+    state.streak = 0;
+  }
+
+  showResult(choice, correct);
+  updateHUD();
+
+  setTimeout(nextQuestion, AUTO_ADVANCE_DELAY);
+}
+
+// ============================================================
+// RESULT DISPLAY
+// ============================================================
+
+function showResult(choice, correct) {
+  const resultEl = document.querySelector("#result");
+
+  if (choice === correct) {
+    resultEl.textContent = "Correct ✅";
+    resultEl.className = "correct";
+  } else {
+    resultEl.textContent = `Wrong ❌ (Correct: ${correct})`;
+    resultEl.className = "wrong";
+  }
+}
+
+// ============================================================
+// TIMER SYSTEM (exam realism)
+// ============================================================
+
+function startTimer() {
+  state.timeLeft = QUESTION_TIME;
+  updateTimerUI();
+
+  state.timer = setInterval(() => {
+    state.timeLeft--;
+    updateTimerUI();
+
+    if (state.timeLeft <= 0) {
+      handleTimeUp();
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(state.timer);
+  state.timer = null;
+}
+
+function handleTimeUp() {
+  if (state.locked) return;
+
+  state.locked = true;
+  state.streak = 0;
+
+  const correct = state.question.answer;
+
+  showResult("⏱", correct);
+
+  setTimeout(nextQuestion, AUTO_ADVANCE_DELAY);
+}
+
+function updateTimerUI() {
+  const el = document.querySelector("#timer");
+  if (el) el.textContent = `Time: ${state.timeLeft}s`;
+}
+
+// ============================================================
+// STATE RESET
+// ============================================================
+
+function resetStateForQuestion() {
+  state.locked = false;
+}
+
+// ============================================================
+// HUD (score/streak)
+// ============================================================
+
+function updateHUD() {
+  const scoreEl = document.querySelector("#score");
+  const streakEl = document.querySelector("#streak");
+  const totalEl = document.querySelector("#total");
+
+  if (scoreEl) scoreEl.textContent = `Score: ${state.score}`;
+  if (streakEl) streakEl.textContent = `Streak: ${state.streak}`;
+  if (totalEl) totalEl.textContent = `Q: ${state.total}`;
+}
+
+// ============================================================
+// INPUT SHORTCUTS (exam mode feel)
+// ============================================================
+
+function bindKeys() {
+  window.addEventListener("keydown", (e) => {
+    const key = e.key.toUpperCase();
+
+    if (["A", "B", "C", "D"].includes(key)) {
+      selectAnswer(key);
+    }
+
+    if (e.key === "Enter") {
+      nextQuestion();
     }
   });
-
-  const isCorrect = selectedLetter === correctLetter;
-  if (!isCorrect) clickedButton.classList.add('incorrect');
-
-  // Display the feedback and the explanation
-  elements.feedbackContainer.innerHTML = `
-    <div class="feedback-card ${isCorrect ? 'pass' : 'fail'}">
-      <h3>${isCorrect ? '✅ Correct' : '❌ Incorrect'}</h3>
-      <p>${explanation}</p>
-      ${currentLayer < 7 
-        ? `<button id="next-btn" class="primary-btn">Proceed to Layer ${currentLayer + 1}</button>` 
-        : `<button id="next-btn" class="primary-btn">Complete Assessment</button>`}
-    </div>
-  `;
-
-  // Attach event listener to the newly created Next button
-  document.getElementById('next-btn').addEventListener('click', () => {
-    if (currentLayer < 7) {
-      currentLayer++;
-      loadQuestion(currentLayer);
-    } else {
-      elements.questionText.textContent = "Assessment Complete. You have mapped the OSI Model.";
-      elements.optionsContainer.innerHTML = '';
-      elements.feedbackContainer.innerHTML = '<button onclick="location.reload()" class="primary-btn">Restart Simulation</button>';
-    }
-  });
 }
 
-// ==========================================
-// 3. UI Helpers
-// ==========================================
+// ============================================================
+// UTILITY: layer selection (lightweight randomness)
+// ============================================================
 
-function updateProgressUI(layer) {
-  elements.layerDisplay.textContent = `Layer: ${layer}`;
-  const percentage = (layer / 7) * 100;
-  elements.progressBar.style.width = `${percentage}%`;
+function pickLayer() {
+  return Math.floor(Math.random() * 7) + 1;
 }
 
-// ==========================================
-// Initialization
-// ==========================================
-document.addEventListener("DOMContentLoaded", () => {
-  // Start the engine
-  loadQuestion(currentLayer);
-});
+// ============================================================
+// UI HELPERS
+// ============================================================
+
+function showLoading(isLoading) {
+  const el = document.querySelector("#loading");
+  if (!el) return;
+  el.style.display = isLoading ? "block" : "none";
+}
