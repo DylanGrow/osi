@@ -1,11 +1,11 @@
 const explorerData = {
-  7: { color:'#7b2ff7', name:'Application layer', desc:'Closest to user. Defines how apps request data.', protocols:['HTTP','HTTPS','DNS','FTP'], pdu:'Data', example:'Browser sends HTTP GET request.' },
-  6: { color:'#d63af9', name:'Presentation layer', desc:'The translator. Handles encryption and formatting.', protocols:['TLS','SSL','JPEG','ASCII'], pdu:'Data', example:'TLS encrypts data; JPEG compresses images.' },
-  5: { color:'#f74e8e', name:'Session layer', desc:'Manages connections. Handles checkpoints and sync.', protocols:['RPC','SIP','NetBIOS'], pdu:'Data', example:'Keeping a video call in sync after drops.' },
-  4: { color:'#f9771e', name:'Transport layer', desc:'End-to-end delivery. TCP for reliability, UDP for speed.', protocols:['TCP','UDP','QUIC'], pdu:'Segment', example:'Webpages (TCP) vs Live Video (UDP).' },
-  3: { color:'#e8b800', name:'Network layer', desc:'Routes packets across networks using IP addresses.', protocols:['IPv4','IPv6','ICMP','BGP'], pdu:'Packet', example:'Routers finding paths across the web.' },
-  2: { color:'#27b567', name:'Data Link layer', desc:'Node-to-node transfer. MAC addresses and framing.', protocols:['Ethernet','Wi-Fi','MAC'], pdu:'Frame', example:'Switches mapping IPs to hardware MACs.' },
-  1: { color:'#1a8cd8', name:'Physical layer', desc:'Hardware level. Cables, signals, and raw bits.', protocols:['Fiber','USB','DSL','802.11'], pdu:'Bit', example:'Fiber optics transmitting light pulses.' }
+  7: { color:'#7b2ff7', name:'Application layer', desc:'Directly interfaces with software. Handles network services for apps.', pdu:'Data', logic:'HTTP request starts here.' },
+  6: { color:'#d63af9', name:'Presentation layer', desc:'The translator. Manages encryption, compression, and encoding.', pdu:'Data', logic:'SSL/TLS encrypts data here.' },
+  5: { color:'#f74e8e', name:'Session layer', desc:'Manages dialogues. Keeps separate application conversations organized.', pdu:'Data', logic:'Keeps app streams separate.' },
+  4: { color:'#f9771e', name:'Transport layer', desc:'End-to-end delivery. TCP for reliability or UDP for speed.', pdu:'Segment', logic:'Windowing/Flow control acts here.' },
+  3: { color:'#e8b800', name:'Network layer', desc:'Routes packets across networks using IP addressing logic.', pdu:'Packet', logic:'Routers select paths here.' },
+  2: { color:'#27b567', name:'Data Link layer', desc:'Node-to-node transfer. Frames raw bits and uses MAC addresses.', pdu:'Frame', logic:'Switches map MAC tables here.' },
+  1: { color:'#1a8cd8', name:'Physical layer', desc:'The hardware level. Transmits raw bits via electrical or light signals.', pdu:'Bit', logic:'Signals travel over cables.' }
 };
 
 const state = {
@@ -16,7 +16,6 @@ const state = {
 };
 
 const API_URL = "https://dark-hall-6deb.dylangrow.workers.dev";
-const AUTO_ADVANCE_DELAY = 2800;
 
 window.addEventListener("DOMContentLoaded", () => {
   bindKeys();
@@ -24,8 +23,8 @@ window.addEventListener("DOMContentLoaded", () => {
   nextQuestion();
 });
 
-// FIXED: Renamed to match your HTML's onclick="toggleLayerDetail(n)"
-function toggleLayerDetail(n) {
+// FIXED: Named 'toggle' to match your HTML onclick="toggle(n)"
+function toggle(n) {
   const panel = document.getElementById('detail-panel');
   const layers = document.querySelectorAll('.layer');
 
@@ -36,19 +35,30 @@ function toggleLayerDetail(n) {
     return;
   }
 
+  // UI Setup
   layers.forEach(l => l.classList.remove('active'));
   document.getElementById('l'+n).classList.add('active');
   state.activeDetail = n;
 
   const d = explorerData[n];
-  panel.style.background = d.color + '15';
-  panel.style.borderColor = d.color + '44';
+  panel.style.borderLeft = `4px solid ${d.color}`;
   panel.innerHTML = `
-    <div style="color:${d.color}; font-weight:700; font-size:16px;">${d.name}</div>
-    <div style="font-size:13px; margin-top:5px; opacity:0.9;">${d.desc}</div>
-    <div style="font-size:11px; margin-top:10px;"><b style="color:${d.color}">PDU:</b> ${d.pdu}</div>
+    <div style="color:${d.color}; font-weight:800; font-size:1.1rem; margin-bottom:5px;">${d.name}</div>
+    <div style="font-size:0.85rem; line-height:1.4; opacity:0.9;">${d.desc}</div>
+    <div style="margin-top:10px; font-size:0.8rem;">
+      <span style="color:${d.color}; font-weight:bold;">PDU:</span> ${d.pdu} | 
+      <span style="color:${d.color}; font-weight:bold;">Logic:</span> ${d.logic}
+    </div>
   `;
   panel.classList.add('visible');
+
+  // Trigger typewriter effect on the "tidbits"
+  const protoText = document.getElementById('p' + n);
+  if (protoText) {
+    protoText.classList.remove('run');
+    void protoText.offsetWidth; 
+    protoText.classList.add('run');
+  }
 }
 
 async function nextQuestion() {
@@ -81,7 +91,7 @@ async function nextQuestion() {
 
 function renderQuestion(data) {
   const layerNum = data.layer_num;
-  document.querySelector("#layer-display").textContent = state.isBonusRound ? `REMEDIATION: Layer ${layerNum}` : `PROTOCOL: Layer ${layerNum}`;
+  document.querySelector("#layer-display").textContent = state.isBonusRound ? `REMEDIATION PHASE: LAYER ${layerNum}` : `PROTOCOL SEQUENCE: LAYER ${layerNum}`;
   document.querySelector("#progress-bar").style.width = `${(state.total / 7) * 100}%`;
 
   document.querySelectorAll(".layer").forEach(el => {
@@ -109,18 +119,22 @@ function selectAnswer(choice) {
   state.locked = true;
   stopTimer();
   const correct = state.question.answer;
-  if (choice === correct) { state.score++; state.streak++; } 
+  const isCorrect = choice === correct;
+
+  if (isCorrect) { state.score++; state.streak++; } 
   else { state.streak = 0; state.missedLayers.push(state.question.layer_num); }
+  
   if (!state.isBonusRound) state.currentLayer++;
-  showResult(choice === correct, correct);
+
+  showResult(isCorrect, correct);
   updateHUD();
-  setTimeout(nextQuestion, AUTO_ADVANCE_DELAY);
+  setTimeout(nextQuestion, 2800);
 }
 
 function showResult(isCorrect, correct) {
   const el = document.querySelector("#feedback");
   const expl = state.question.explanation || "";
-  el.innerHTML = isCorrect ? `<span class="correct">Correct ✅</span><small class="expl">${expl}</small>` : `<span class="wrong">Wrong ❌</span><small class="expl">${expl}</small>`;
+  el.innerHTML = isCorrect ? `<span style="color:#22c55e">Correct ✅</span><small class="expl">${expl}</small>` : `<span style="color:#ef4444">Wrong ❌ (Target: ${correct})</span><small class="expl">${expl}</small>`;
 }
 
 function animatePacket() {
@@ -130,11 +144,13 @@ function animatePacket() {
   let i = 0;
   setInterval(() => {
     const el = layers[i];
-    if (!el) return;
-    const topPos = el.offsetTop + (el.offsetHeight / 2) - 10;
-    pkt.style.opacity = '1';
-    pkt.style.top = topPos + 'px';
-    pkt.style.background = colors[i];
+    if (el) {
+      const topPos = el.offsetTop + (el.offsetHeight / 2) - 30; // Adjust for hud height
+      pkt.style.opacity = '1';
+      pkt.style.top = topPos + 'px';
+      pkt.style.background = colors[i];
+      pkt.style.boxShadow = `0 0 15px ${colors[i]}`;
+    }
     i = (i + 1) % 7;
   }, 1200);
 }
@@ -143,10 +159,12 @@ function startTimer() {
   state.timeLeft = 90;
   state.timer = setInterval(() => {
     state.timeLeft--;
-    document.querySelector("#timer").textContent = `Time: ${state.timeLeft}s`;
+    const t = document.querySelector("#timer");
+    if (t) t.textContent = `Time: ${state.timeLeft}s`;
     if (state.timeLeft <= 0) { stopTimer(); state.missedLayers.push(state.question.layer_num); if (!state.isBonusRound) state.currentLayer++; nextQuestion(); }
   }, 1000);
 }
+
 function stopTimer() { clearInterval(state.timer); }
 function resetStateForQuestion() { state.locked = false; }
 function updateHUD() {
@@ -160,11 +178,14 @@ function bindKeys() {
     if (["A", "B", "C", "D"].includes(key)) selectAnswer(key);
   });
 }
-function showLoading(l) { document.querySelector("#loading").style.display = l ? "block" : "none"; }
+function showLoading(l) { 
+  const loader = document.querySelector("#loading");
+  if (loader) loader.style.display = l ? "block" : "none"; 
+}
 function showBonusTransition() {
-  document.querySelector("#question-container").innerHTML = `<h2 style="color:#f9a825">BONUS ROUND</h2><p>Master the layers you missed.</p><button class="option" onclick="nextQuestion()">Begin Remediation</button>`;
+  document.querySelector("#question-container").innerHTML = `<h2 style="color:#f9a825">BONUS ROUND</h2><p style="margin: 10px 0;">You missed ${state.missedLayers.length} layers. Initiating remediation...</p><button class="option" onclick="nextQuestion()">Begin Now</button>`;
 }
 function showEndScreen() {
-  document.querySelector("#question-container").innerHTML = `<h2>Protocol Complete</h2><p>Accuracy: ${Math.round((state.score/state.total)*100)}%</p><button class="option" onclick="location.reload()">Re-initialize</button>`;
+  document.querySelector("#question-container").innerHTML = `<h2>Protocol Complete</h2><p>Accuracy: ${Math.round((state.score/state.total)*100)}%</p><button class="option" onclick="location.reload()" style="margin-top:20px;">Re-initialize System</button>`;
 }
-function renderError() { document.querySelector("#question").textContent = "Connection Lost. Retrying..."; setTimeout(nextQuestion, 2000); }
+function renderError() { document.querySelector("#question").textContent = "Connection Lost. Check Worker deployment."; setTimeout(nextQuestion, 2000); }
