@@ -16,7 +16,7 @@ const state = {
 // CONFIG
 // ============================================================
 
-const API_URL = "https://your-worker-url"; // <-- update this
+const API_URL = "https://dark-hall-6deb.dylangrow.workers.dev"; // URL updated to live endpoint
 const QUESTION_TIME = 90; // seconds
 const AUTO_ADVANCE_DELAY = 1800; // ms after answer
 
