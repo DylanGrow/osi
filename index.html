@@ -4,83 +4,26 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <link rel="stylesheet" href="style.css">
-  <title>OSI Trainer</title>
+  <title>OSI Protocol Trainer</title>
 </head>
 <body>
-  <div class="container">
-    <!-- HUD -->
+  <main id="game-container">
     <header id="hud">
       <span id="score">Score: 0</span>
       <span id="timer">Time: 90s</span>
-      <div class="progress-container">
-        <div id="progress-fill" class="progress-fill"></div>
-      </div>
       <span id="streak">Streak: 0</span>
-      <span id="total">Progress: 0</span>
     </header>
 
+    <div class="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+
     <div id="main-layout">
-      <!-- LEFT: Visual Stack -->
       <aside id="visual-stack-container">
         <div style="display:flex; gap:10px; align-items:flex-start;">
           <div id="packet-track">
             <div class="packet" id="pkt"></div>
           </div>
+
           <div id="osi-stack">
-            <div class="layer" id="l7" onclick="toggle(7)">
-              <div class="layer-num">7</div>
-              <div class="layer-name">Application</div>
-              <div class="layer-proto proto-text" id="p7">HTTP · DNS · SMTP</div>
-            </div>
-            <div class="layer" id="l6" onclick="toggle(6)">
-              <div class="layer-num">6</div>
-              <div class="layer-name">Presentation</div>
-              <div class="layer-proto proto-text" id="p6">TLS · JPEG · ASCII</div>
-            </div>
-            <div class="layer" id="l5" onclick="toggle(5)">
-              <div class="layer-num">5</div>
-              <div class="layer-name">Session</div>
-              <div class="layer-proto proto-text" id="p5">RPC · SIP · NetBIOS</div>
-            </div>
-            <div class="layer" id="l4" onclick="toggle(4)">
-              <div class="layer-num">4</div>
-              <div class="layer-name">Transport</div>
-              <div class="layer-proto proto-text" id="p4">TCP · UDP · QUIC</div>
-            </div>
-            <div class="layer" id="l3" onclick="toggle(3)">
-              <div class="layer-num">3</div>
-              <div class="layer-name">Network</div>
-              <div class="layer-proto proto-text" id="p3">IP · ICMP · BGP</div>
-            </div>
-            <div class="layer" id="l2" onclick="toggle(2)">
-              <div class="layer-num">2</div>
-              <div class="layer-name">Data Link</div>
-              <div class="layer-proto proto-text" id="p2">Ethernet · MAC · Wi-Fi</div>
-            </div>
-            <div class="layer" id="l1" onclick="toggle(1)">
-              <div class="layer-num">1</div>
-              <div class="layer-name">Physical</div>
-              <div class="layer-proto proto-text" id="p1">Fiber · USB · DSL</div>
-            </div>
-          </div>
-        </div>
-        
-        <div id="detail-panel" class="detail-panel"></div>
-        <div class="legend">Click layers to explore protocols</div>
-      </aside>
-
-      <!-- RIGHT: Quiz -->
-      <section id="question-container">
-        <h2 id="layer-display">Initializing Protocol Sequence...</h2>
-        <div id="question">Awaiting layer transmission...</div>
-        <div id="options"></div>
-        <div id="feedback"></div>
-      </section>
-    </div>
-
-    <div id="loading">📡 Uplinking to OSI Core...</div>
-  </div>
-
-  <script src="app.js" defer></script>
-</body>
-</html>
+            <div
