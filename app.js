@@ -23,7 +23,7 @@ window.addEventListener("DOMContentLoaded", () => {
   nextQuestion();
 });
 
-// FIXED: Named 'toggle' to match your HTML onclick="toggle(n)"
+// ✅ FIXED: toggle(n) - Perfect .active + .visible sync, tidbit restart
 function toggle(n) {
   const panel = document.getElementById('detail-panel');
   const layers = document.querySelectorAll('.layer');
@@ -35,9 +35,12 @@ function toggle(n) {
     return;
   }
 
-  // UI Setup
+  // Remove active from ALL layers first
   layers.forEach(l => l.classList.remove('active'));
-  document.getElementById('l'+n).classList.add('active');
+  
+  // Add active ONLY to clicked layer
+  const activeLayer = document.getElementById('l'+n);
+  activeLayer.classList.add('active');
   state.activeDetail = n;
 
   const d = explorerData[n];
@@ -52,11 +55,11 @@ function toggle(n) {
   `;
   panel.classList.add('visible');
 
-  // Trigger typewriter effect on the "tidbits"
+  // Restart tidbit typewriter (confirmed working)
   const protoText = document.getElementById('p' + n);
   if (protoText) {
     protoText.classList.remove('run');
-    void protoText.offsetWidth; 
+    void protoText.offsetWidth; // Force reflow
     protoText.classList.add('run');
   }
 }
@@ -137,17 +140,29 @@ function showResult(isCorrect, correct) {
   el.innerHTML = isCorrect ? `<span style="color:#22c55e">Correct ✅</span><small class="expl">${expl}</small>` : `<span style="color:#ef4444">Wrong ❌ (Target: ${correct})</span><small class="expl">${expl}</small>`;
 }
 
+// ✅ FIXED: animatePacket() - getBoundingClientRect() for PERFECT centering (no HUD issues)
 function animatePacket() {
   const pkt = document.getElementById('pkt');
+  const packetTrack = document.getElementById('packet-track');
   const layers = [1,2,3,4,5,6,7].map(n => document.getElementById('l'+n));
   const colors = ['#1a8cd8','#27b567','#e8b800','#f9771e','#f74e8e','#d63af9','#7b2ff7'];
   let i = 0;
+  
   setInterval(() => {
     const el = layers[i];
-    if (el) {
-      const topPos = el.offsetTop + (el.offsetHeight / 2) - 30; // Adjust for hud height
+    if (el && pkt && packetTrack) {
+      // Get viewport-accurate positions
+      const trackRect = packetTrack.getBoundingClientRect();
+      const layerRect = el.getBoundingClientRect();
+      
+      // Calculate layer's vertical center relative to packet-track
+      const layerCenterY = layerRect.top + (layerRect.height / 2);
+      const relativeTop = layerCenterY - trackRect.top;
+      
+      // Center packet perfectly (24px pkt height / 2 = 12px offset)
+      pkt.style.top = `${relativeTop - 12}px`;
+      
       pkt.style.opacity = '1';
-      pkt.style.top = topPos + 'px';
       pkt.style.background = colors[i];
       pkt.style.boxShadow = `0 0 15px ${colors[i]}`;
     }
