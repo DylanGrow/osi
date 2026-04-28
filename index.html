@@ -6,24 +6,63 @@
   <link rel="stylesheet" href="style.css">
   <title>OSI Protocol Trainer</title>
 </head>
+
 <body>
   <main id="game-container">
+
+    <!-- HUD -->
     <header id="hud">
       <span id="score">Score: 0</span>
       <span id="timer">Time: 90s</span>
       <span id="streak">Streak: 0</span>
     </header>
 
+    <!-- Progress -->
     <div class="progress-container">
       <div id="progress-bar"></div>
     </div>
 
+    <!-- MAIN LAYOUT -->
     <div id="main-layout">
+
+      <!-- LEFT: STACK -->
       <aside id="visual-stack-container">
-        <div style="display:flex; gap:10px; align-items:flex-start;">
+        <div class="stack-wrapper">
+
+          <!-- Packet Track -->
           <div id="packet-track">
-            <div class="packet" id="pkt"></div>
+            <div id="pkt"></div>
           </div>
 
+          <!-- OSI STACK -->
           <div id="osi-stack">
-            <div
+
+            <div id="l7" class="layer" data-name="Application"></div>
+            <div id="l6" class="layer" data-name="Presentation"></div>
+            <div id="l5" class="layer" data-name="Session"></div>
+            <div id="l4" class="layer" data-name="Transport"></div>
+            <div id="l3" class="layer" data-name="Network"></div>
+            <div id="l2" class="layer" data-name="Data Link"></div>
+            <div id="l1" class="layer" data-name="Physical"></div>
+
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: QUIZ -->
+      <section id="quiz-container">
+
+        <div id="question">Loading question...</div>
+
+        <div id="options"></div>
+
+        <div id="feedback"></div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
