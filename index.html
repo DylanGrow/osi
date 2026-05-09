@@ -3,64 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="AI Quiz App - A beautifully designed, dynamic quiz application powered by AI. Test your tech knowledge.">
   <link rel="stylesheet" href="style.css">
-  <title>OSI Protocol Trainer</title>
+  <title>AI Quiz App</title>
 </head>
 
 <body>
-  <main id="game-container">
-
-    <!-- HUD -->
-    <header id="hud">
-      <span id="score">Score: 0</span>
-      <span id="timer">Time: 90s</span>
-      <span id="streak">Streak: 0</span>
-    </header>
+  <main id="game-container" class="container">
 
     <!-- Progress -->
-    <div class="progress-container">
-      <div id="progress-bar"></div>
+    <div class="progress-container" aria-label="Game Progress">
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
     </div>
 
-    <!-- MAIN LAYOUT -->
-    <div id="main-layout">
+    <!-- QUIZ -->
+    <section id="quiz-container" aria-labelledby="question">
+      <!-- HUD -->
+      <header id="hud" aria-label="Heads Up Display">
+        <div id="score" class="hud-pill">Score: 0</div>
+        <div id="timer" class="hud-pill">Time: 90s</div>
+        <div id="streak" class="hud-pill">Streak: 0</div>
+      </header>
 
-      <!-- LEFT: STACK -->
-      <aside id="visual-stack-container">
-        <div class="stack-wrapper">
+      <h1 id="question">Loading question...</h1>
 
-          <!-- Packet Track -->
-          <div id="packet-track">
-            <div id="pkt"></div>
-          </div>
+      <div id="options" role="group" aria-label="Answer Options"></div>
 
-          <!-- OSI STACK -->
-          <div id="osi-stack">
+      <div id="feedback" aria-live="polite"></div>
 
-            <div id="l7" class="layer" data-name="Application"></div>
-            <div id="l6" class="layer" data-name="Presentation"></div>
-            <div id="l5" class="layer" data-name="Session"></div>
-            <div id="l4" class="layer" data-name="Transport"></div>
-            <div id="l3" class="layer" data-name="Network"></div>
-            <div id="l2" class="layer" data-name="Data Link"></div>
-            <div id="l1" class="layer" data-name="Physical"></div>
+    </section>
 
-          </div>
-        </div>
-      </aside>
-
-      <!-- RIGHT: QUIZ -->
-      <section id="quiz-container">
-
-        <div id="question">Loading question...</div>
-
-        <div id="options"></div>
-
-        <div id="feedback"></div>
-
-      </section>
-
-    </div>
   </main>
 
   <script src="app.js"></script>
