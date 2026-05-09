@@ -8,7 +8,7 @@ An AI-powered, interactive quiz app for mastering all 7 layers of the OSI Model.
 
 ## What It Does
 
-- Generates unique quiz questions for each OSI layer using the Gemini 1.5 Flash API via a Cloudflare Worker
+- Generates unique quiz questions for each OSI layer using the llama via a Cloudflare Worker
 - Tracks which questions you've already seen so you never get repeats
 - Advances you through all 7 layers — Physical → Application — as you answer correctly
 - Resets and loops when you complete all layers
