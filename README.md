@@ -51,7 +51,7 @@ An AI-powered, interactive quiz app for mastering all 7 layers of the OSI Model.
 
 ### 1. Deploy the Cloudflare Worker
 
-The worker proxies quiz requests to Gemini so your API key is never exposed in the frontend.
+The worker proxies quiz requests to llama so your API key is never exposed in the frontend.
 
 Create a free account at workers.cloudflare.com
 Create a new Worker and paste in worker.js
